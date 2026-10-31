@@ -34,6 +34,13 @@ test('start token of the sibling is refused', () => {
   assert.equal(r.state.kid, 'y');
 });
 
+test('own start card again resumes without changes', () => {
+  const s = atRunes('y', 3);
+  const r = applyToken(s, START_TOKENS.y, T);
+  assert.equal(r.outcome, 'resumed');
+  assert.deepEqual(r.state, s);
+});
+
 test('stage card before the start card asks for start', () => {
   const r = applyToken(newState(), tok('y', 1), T);
   assert.equal(r.outcome, 'needStart');

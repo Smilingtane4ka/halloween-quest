@@ -49,7 +49,7 @@ export function applyToken(state, token, now) {
   if (!info) return { state, outcome: 'unknown' };
   if (info.n === 0) {
     if (!state.kid) return { state: { ...state, kid: info.kid, startedAt: now, stageStartedAt: now }, outcome: 'started' };
-    return { state, outcome: state.kid === info.kid ? 'already' : 'otherKid' };
+    return { state, outcome: state.kid === info.kid ? 'resumed' : 'otherKid' };
   }
   if (!state.kid) return { state, outcome: 'needStart' };
   if (info.kid !== state.kid) return { state, outcome: 'otherKid' };
