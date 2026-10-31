@@ -76,6 +76,12 @@ test('typed answers: map room, ghosts word, card word', () => {
   assert.equal(checkAnswer(atRunes('y', 0), 'гарбуз', T).outcome, 'rune');
 });
 
+test("typed answers: a 7-year-old's spelling", () => {
+  assert.equal(checkAnswer(atRunes('y', 4), 'вана', T).outcome, 'rune');
+  assert.equal(checkAnswer(atRunes('y', 4), 'вану', T).outcome, 'rune');
+  assert.equal(checkAnswer(atRunes('y', 6), 'друзи', T).outcome, 'rune');
+});
+
 test('typed answers: wrong, empty, other kid, too early, already', () => {
   assert.equal(checkAnswer(atRunes('y', 0), 'кіт', T).outcome, 'wrong');
   assert.equal(checkAnswer(atRunes('y', 0), '  ', T).outcome, 'empty');

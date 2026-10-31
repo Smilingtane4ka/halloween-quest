@@ -39,6 +39,7 @@ body {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
+#title { touch-action: none; }
 h1, h2, h3 { font-family: Philosopher, Georgia, serif; font-weight: 700; margin: 0; }
 .top h1 { font-size: 20px; color: var(--glow); letter-spacing: .3px; text-shadow: 0 0 12px #ff8a1f66; }
 .kid-badge {
@@ -118,6 +119,9 @@ main { max-width: 480px; margin: 0 auto; }
   letter-spacing: 1px;
 }
 .answer input:focus { outline: none; border-color: var(--kid); }
+.feedback { margin: 0; min-height: 0; text-align: center; font-weight: 800; color: #9ff0b0; }
+.feedback:empty { display: none; }
+.feedback.bad { color: #ffb3b3; }
 .scan-note { margin: 0; text-align: center; color: var(--muted); font-size: 15px; }
 
 .hint { padding: 12px 14px; border-radius: 12px; background: #ffffff10; border: 1px dashed #ffffff40; }
@@ -136,8 +140,8 @@ main { max-width: 480px; margin: 0 auto; }
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(24px + env(safe-area-inset-bottom));
-  transform: translate(-50%, 140%);
+  top: calc(12px + env(safe-area-inset-top));
+  transform: translate(-50%, -140%);
   opacity: 0;
   width: min(440px, calc(100% - 32px));
   padding: 14px 16px;
@@ -176,6 +180,7 @@ main { max-width: 480px; margin: 0 auto; }
 .certificate h3 { font-size: 24px; margin-bottom: 6px; }
 .certificate .name { font: 700 26px Philosopher, Georgia, serif; color: #6a2c00; margin: 8px 0; }
 
+dialog:not([open]) { display: none; }
 .adult { border: 0; border-radius: 16px; padding: 20px; max-width: 360px; background: #23123d; color: var(--ink); }
 .adult::backdrop { background: #000a; }
 .adult h2 { margin-bottom: 8px; }

@@ -9,7 +9,7 @@ const MESSAGES = {
   otherKid: 'Цей лист — для іншого мисливця 👻',
   tooEarly: 'Ще зарано! Спершу розгадай цю загадку',
   already: 'Цю руну вже зібрано ✨',
-  needStart: 'Спершу відскануй свою Старт-картку',
+  needStart: 'Спершу відскануй свою Старт-картку. Якщо гра вже почалась — повернись у першу вкладку і введи чарівне слово з листа.',
   wrong: 'Ні, це не чарівне слово… Спробуй ще!',
   unknown: 'Дивний знак… Бублик його не знає',
   finished: 'Квест уже пройдено! 🎉',
@@ -18,6 +18,9 @@ const MESSAGES = {
 
 // ---------- стан ----------
 let memoryState = null;
+const storageOk = (() => {
+  try { localStorage.setItem('hq-probe', '1'); localStorage.removeItem('hq-probe'); return true; } catch { return false; }
+})();
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -38,6 +41,8 @@ const runeImg = (n) => `assets/runes/rune-${n}.jpg`;
 
 let toastTimer;
 function toast(text, bad = false) {
+  const inline = $('#feedback');
+  if (inline) { inline.textContent = text; inline.classList.toggle('bad', bad); }
   const el = $('#toast');
   el.textContent = text;
   el.classList.remove('shake');
@@ -59,9 +64,12 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
+let audio;
 function chime() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    audio ??= new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audio;
+    if (ctx.state !== 'running') return false;
     [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -75,8 +83,8 @@ function chime() {
       o.start(t);
       o.stop(t + 0.65);
     });
-  } catch { /* без звуку — не біда */ }
-  navigator.vibrate?.([80, 40, 140]);
+    return true;
+  } catch { return true; /* без звуку — не біда */ }
 }
 
 // ---------- результати дій ----------
@@ -113,8 +121,12 @@ function showRune(n) {
     <p class="small">Зібрано ${n} з ${STAGES.length}</p>
     <button class="btn" id="ov-next" type="button">${last ? 'Зняти закляття! 🎁' : 'Далі ➜'}</button>`;
   ov.hidden = false;
-  chime();
-  $('#ov-next').addEventListener('click', () => { ov.hidden = true; render(); window.scrollTo(0, 0); });
+  const played = chime();
+  navigator.vibrate?.([80, 40, 140]);
+  $('#ov-next').addEventListener('click', async () => {
+    if (!played) { await audio?.resume().catch(() => {}); chime(); }
+    ov.hidden = true; render(); window.scrollTo(0, 0);
+  });
 }
 
 // ---------- екрани ----------
@@ -128,7 +140,7 @@ function shelf() {
 function chooseScreen() {
   return `<section class="screen">
     <img class="bublik big" src="assets/bublik.png" alt="Привид Бублик">
-    <p class="lead">Привіт, мисливцю на привидів! 👻<br>Наведи камеру телефону на свою <b>Старт-картку</b> 📷</p>
+    <p class="lead">Привіт, мисливцю на привидів! 👻<br>Відкрий Камеру 📷 і наведи її на свою <b>Старт-картку</b></p>
     <p class="small">Або обери себе:</p>
     <div class="choose">
       ${Object.values(KIDS).map((k) => `<button class="btn" type="button" data-kid="${k.id}" style="background:${k.color}">${k.emoji} ${esc(k.label)}</button>`).join('')}
@@ -170,11 +182,12 @@ function stageScreen() {
       <button class="btn ghost" type="button" id="hint-btn" ${hintReady ? '' : 'disabled'}>${hintReady ? '💡 Підказка' : hintLabel(now)}</button>
     </div>
     <div id="hint-box"></div>
+    <p id="feedback" class="feedback" role="status"></p>
     <form class="answer" id="answer" autocomplete="off">
       <input name="word" placeholder="${p.token ? 'Чарівне слово з листа' : 'Твоя відповідь'}" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go">
       <button class="btn wide" type="submit">✨ Перевірити</button>
     </form>
-    ${p.token ? '<p class="scan-note">або наведи камеру телефону на QR-квадратик на листі 📷</p>' : ''}
+    ${p.token ? '<p class="scan-note">або відкрий Камеру 📷 і наведи на квадратик на листі</p>' : ''}
     ${shelf()}
   </section>`;
 }
@@ -254,10 +267,12 @@ app.addEventListener('submit', (e) => {
   if (e.target.id !== 'answer') return;
   e.preventDefault();
   const input = e.target.elements.word;
-  const outcome = handle(checkAnswer(state, input.value, Date.now()));
+  const typed = input.value;
+  input.blur(); // ховаємо клавіатуру, щоб дитина побачила відповідь
+  const outcome = handle(checkAnswer(state, typed, Date.now()));
   if (outcome === 'wrong' || outcome === 'otherKid' || outcome === 'tooEarly') {
     const again = $('#answer input');
-    if (again) { again.value = input.value; again.select(); }
+    if (again) again.value = typed;
   }
 });
 
@@ -265,6 +280,10 @@ function consumeHash() {
   const m = location.hash.match(/k=([\w-]+)/);
   if (!m) return;
   history.replaceState(null, '', location.pathname + location.search);
+  if (!storageOk && !state.kid && m[1][1] !== '0') {
+    toast('Цей браузер не запам\'ятовує гру між вкладками. Повернись у першу вкладку і введи чарівне слово з листа.', true);
+    return;
+  }
   state = load();
   handle(applyToken(state, m[1], Date.now()));
 }
