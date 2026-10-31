@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Квест — для дорослого</title>
+  <link rel="icon" href="assets/bublik.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Philosopher:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/print.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+</head>
+<body>
+  <header class="screen-only controls">
+    <h1>Набір для друку 🖨️</h1>
+    <p>QR-коди ведуть на: <code id="base-url"></code></p>
+    <p id="url-warning" class="warning" hidden>Ця сторінка відкрита не з інтернет-адреси, тож QR-коди не спрацюють на телефонах. Відкрийте її за посиланням GitHub Pages і друкуйте звідти.</p>
+    <p>Друкуйте на A4 у кольорі. У вікні друку увімкніть <b>«Фонова графіка» / «Background graphics»</b> і масштаб 100%.</p>
+    <button id="print" type="button">🖨️ Друкувати все</button>
+  </header>
+  <main id="sheets"></main>
+  <script type="module" src="js/parent.js"></script>
+</body>
+</html>
